@@ -7,7 +7,7 @@ bb32 = readTM(3,2,bb32D)
 bb52 = readTM(5,2,bb52D)
 bb24 = readTM(2,4,bb24D)
 
-output,iters,reason,undef,prod = runTM(bb24,2,4)
+output,iters,reason,undef,prod = runTM(bb24,2,4,100)
 print(iters)
 print(reason)
 print(prod)

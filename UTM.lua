@@ -31,7 +31,7 @@ function showTM(M,n,m)
   return table.concat(s," ")
 end
 
-function runTM(M,n,m)
+function runTM(M,n,m,bound)
   local tape,ix,state,iterations,reason,zeros,minix,maxix = {},0,"a",0,nil,0,0,0
   local get = function(tape,i)
     local v = tape[i]
@@ -48,6 +48,10 @@ function runTM(M,n,m)
     if state == "z" then
       reason = "halted"
       break  
+    end
+    if iterations >= bound then
+      reason = "bound"
+      break
     end
     local v  = get(tape,ix)
     local at = M[state..v]
