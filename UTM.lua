@@ -1,16 +1,12 @@
-local states = {"a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y"}
-local symbols = {"0","1","2","3","4","5","6","7","8","9"}
-
-function index(i,j)
-  return states[i]..symbols[j]
-end
+states = {"a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y"}
+symbols = {"0","1","2","3","4","5","6","7","8","9"}
 
 function readTM (n,m,rules)
   local M={}
   local g = 1
   for i=1,n do
     for j=1,m do
-      M[index(i,j)] = rules[g]
+      M[states[i]..symbols[j]] = rules[g]
       g = g+1
     end
   end
@@ -21,27 +17,17 @@ function showTM(M,n,m)
   local s = {}
   for i=1,n do
     for j=1,m do
-      local at = M[index(i,j)]
-      if nil == at then
-        at = "---"
-      end
+      local at = M[states[i]..symbols[j]]
+      if nil == at then at = "---" end
       table.insert(s,at)
     end
   end
-  return table.concat(s," ")
-end
-
-function computation_code(tape,state,ix,minix,maxix)
-  local s = {}
-  for k=minix,maxix do
-    table.insert(s,tape[k])
-  end
-  return table.concat(s)..state..tostring(ix)
+  return s
 end
 
 -- Runs a TM in the empty input checking various conditions as in the paper
-function runTM(M,n,m,bound,check_cycles)
-  local tape,ix,state,iterations,reason,nzeros,minix,maxix,seen = {},0,"a",0,nil,0,0,0,{}
+function runTM(M,n,m,bound)
+  local tape,ix,state,iterations,reason,nzeros,minix,maxix = {},0,"a",0,nil,0,0,0
   local get = function(tape,i)
     local v = tape[i]
     if v == nil then
@@ -57,14 +43,6 @@ function runTM(M,n,m,bound,check_cycles)
     if state == "z" then
       reason = "halted"
       break  
-    end
-    if check_cycles then                    -- Cyclic machines do not halt
-      local status = computation_code(tape,state,ix,minix,maxix)
-      if seen[status] then
-        reason = "cyclic"
-        break
-      end
-      seen[status] = true
     end
     if iterations >= bound then
       reason = "bound"
@@ -94,10 +72,6 @@ function runTM(M,n,m,bound,check_cycles)
     minix = math.min(ix,minix)
     maxix = math.max(ix,maxix)
   end
-  local output = {}
-  for i=minix,maxix do
-    table.insert(output,tape[i])
-  end
   return output,iterations,reason,undef,nzeros
 end
 
@@ -110,9 +84,8 @@ bb32 = readTM(3,2,bb32D)
 bb52 = readTM(5,2,bb52D)
 bb24 = readTM(2,4,bb24D)
 --[[
-  output,iters,reason,undef,prod = runTM(bb32,3,2,100,false)
-  print(iters)
-  print(reason)
-  print(prod)
-  print(table.concat(output))
+output,iters,reason,undef,prod = runTM(bb52,5,2,100^10)
+print(iters)
+print(reason)
+print(prod)
 --]]

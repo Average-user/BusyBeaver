@@ -1,21 +1,21 @@
 require "UTM"
 
-local states = {"a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y"}
-local symbols = {"0","1","2","3","4","5","6","7","8","9"}
-  
-
-function symbol_choice(m,sym)
-  local k = #sym
-  if k < m then
-    table.insert(sym,symbols[k+1])
+function symbol_choice(m,k)
+  local t = k
+  if k < m then t = t+1 end
+  local sym = {}
+  for c=1,t do
+    table.insert(sym,symbols[c])
   end
   return sym
 end
 
-function state_choice(m,sts)
-  local k = #sts
-  if k < m then
-    table.insert(sts,states[k+1])
+function state_choice(n,k)
+  local t = k
+  if k < n then t = t+1 end
+  local sts = {}
+  for c=1,t do
+    table.insert(sts,states[c])
   end
   return sts
 end
@@ -34,49 +34,46 @@ function states_and_symbols(M,n,m)
     end
   end
   ST["z"] = nil
-  local sts,c1,sys,c2 = {},0,{},0
+  local sts,sys = {},{}
   for x,_ in pairs(ST) do
-    c1 = c1+1
     table.insert(sts,x)
   end
   for x,_ in pairs(SY) do
-    c2 = c2+1
     table.insert(sys,x)
   end
-  return sts,c1,sys,c2
+  table.sort(sts)
+  table.sort(sys)
+  --[[ For Debuggin
+  for a=1,#sts do
+    if sts[a] ~= states[a] then
+      print("mhhh")
+    end
+  end
+  for a=1,#sys do
+    if sys[a] ~= symbols[a] then
+      print("ohhh")
+    end
+  end
+  --]] 
+  return sts,sys
 end
       
 function zero_dextrous(M,n,m)
-  local c1 = 0
-  local c2 = 0
   for i=1,n do
     local v = M[states[i].."0"]
-    if v ~= nil then
-      c1 = c1+1
-      if v:sub(2,2) == "r" then
-        c2 = c2+1
-      end
+    if nil == v or v:sub(2,2) ~= "r" then
+      return false
     end
   end
-  return c1 == n and c2 == n
+  return true
 end
-
-
-C = 1
-file,_ = io.open(arg[1]..arg[2]..".txt", "w")
-
-function output(M,n,m)
- -- print(C,showTM(M,n,m))
-  file:write(showTM(M,n,m).."\n") -- writes nm.txt with the machines generated.
-  C = C+1
-end  
 
 -- steps (1) and (2)
 function generate(n,m,bound)
   local M = {["a0"]="1rb"}
 
   for _,ns in pairs {"a","b"} do
-    for _,o in pairs(symbol_choice(m,{"0","1"})) do
+    for _,o in pairs(symbol_choice(m,2)) do
       M["b0"] = o.."l"..ns
       execution(M,n,m,bound)
       M["b0"] = nil
@@ -85,7 +82,7 @@ function generate(n,m,bound)
 
   if n >= 3 then
     for _,d in pairs {"l","r"} do
-      for _,o in pairs(symbol_choice(m,{"0","1"})) do
+      for _,o in pairs(symbol_choice(m,2)) do
         M["b0"] = o..d.."c"
         execution(M,n,m,bound)
         M["b0"] = nil
@@ -96,7 +93,7 @@ end
 
 -- Step (3) 
 function execution(M,n,m,bound)
-  local _,_,t,s,_ = runTM(M,n,m,bound,false)
+  local _,_,t,s,_ = runTM(M,n,m,bound)
   if t == "incomplete" then
     expand(M,n,m,bound,s)
   else
@@ -106,27 +103,22 @@ end
 
 -- Step (5)
 function tryfix(M,n,m)
-  local c = 0
-  local fix = nil
+  local c,fix = 0,nil
   for i=1,n do
     for j=1,m do
-      if M[states[i]..symbols[j]] ~= nil then
-        c = c+1
-      else
+      if M[states[i]..symbols[j]] == nil then
         fix = states[i]..symbols[j]
+        c = c+1
       end
     end
   end
-  if c == (n*m) -1 then
-    return fix
-  end
-  return nil
+  return fix,c
 end      
 
 -- Step (4) 
 function expand(M,n,m,bound,undef)
-  local sts,c1,sys,c2 = states_and_symbols(M,n,m)
-  if n == c1 and m == c2 then
+  local sts,sys = states_and_symbols(M,n,m)
+  if n == #sts and m == #sys then
     M[undef] = "1rz"
     if not(zero_dextrous(M,n,m)) then
       output(M,n,m)
@@ -134,14 +126,14 @@ function expand(M,n,m,bound,undef)
     M[undef] = nil
   end
 
-  for _,ns in pairs(state_choice(n,sts)) do
-    for _,o in pairs(symbol_choice(m,sys)) do
+  for _,ns in pairs(state_choice(n,#sts)) do
+    for _,o in pairs(symbol_choice(m,#sys)) do
       for _,d in pairs({"l","r"}) do
         M[undef] = o..d..ns
         if not (zero_dextrous(M,n,m)) then
-          local fix = tryfix(M,n,m)
-          if fix then
-            M[fix] = "1rz"
+          local fix,amount = tryfix(M,n,m)
+          if amount == 1 then
+            M[fix] = "1rz"           
             output(M,n,m)
             M[fix] = nil
           else
@@ -154,5 +146,19 @@ function expand(M,n,m,bound,undef)
   end
 end
 
+
+---------------------------------------------------------------
+C = 0
+MACHINES = {}
+file = io.open(arg[1].."-"..arg[2].."-"..arg[3]..".txt", "w")
+
+-- Function called when a machine to be collected is found
+function output(M,n,m)
+  --table.insert(MACHINES,showTM(M,n,m))
+  -- print(C,showTM(M,n,m))
+  file:write(showTM(M,n,m).."\n") -- writes nm.txt with the machines generated.
+  C = C+1
+end  
+
 generate(tonumber(arg[1]),tonumber(arg[2]),tonumber(arg[3]))
-print(C-1)
+print(C)
