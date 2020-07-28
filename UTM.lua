@@ -22,7 +22,7 @@ function showTM(M,n,m)
       table.insert(s,at)
     end
   end
-  return s
+  return table.concat(s)
 end
 
 -- Runs a TM in the empty input checking various conditions as in the paper
