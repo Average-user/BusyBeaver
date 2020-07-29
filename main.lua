@@ -54,10 +54,10 @@ function states_and_symbols(M,n,m)
       print("ohhh")
     end
   end
-  --]] 
+  --]]
   return sts,sys
 end
-      
+
 function zero_dextrous(M,n,m)
   for i=1,n do
     local v = M[states[i].."0"]
@@ -91,7 +91,7 @@ function generate(n,m,bound)
   end
 end
 
--- Step (3) 
+-- Step (3)
 function execution(M,n,m,bound)
   local _,_,t,s,_ = runTM(M,n,m,bound)
   if t == "incomplete" then
@@ -113,9 +113,9 @@ function tryfix(M,n,m)
     end
   end
   return fix,c
-end      
+end
 
--- Step (4) 
+-- Step (4)
 function expand(M,n,m,bound,undef)
   local sts,sys = states_and_symbols(M,n,m)
   if n == #sts and m == #sys then
@@ -133,7 +133,7 @@ function expand(M,n,m,bound,undef)
         if not (zero_dextrous(M,n,m)) then
           local fix,amount = tryfix(M,n,m)
           if amount == 1 then
-            M[fix] = "1rz"           
+            M[fix] = "1rz"
             output(M,n,m)
             M[fix] = nil
           else
@@ -146,7 +146,6 @@ function expand(M,n,m,bound,undef)
   end
 end
 
-
 ---------------------------------------------------------------
 C = 0
 MACHINES = {}
@@ -158,7 +157,7 @@ function output(M,n,m)
   -- print(C,showTM(M,n,m))
   file:write(showTM(M,n,m).."\n") -- writes nm.txt with the machines generated.
   C = C+1
-end  
+end
 
 generate(tonumber(arg[1]),tonumber(arg[2]),tonumber(arg[3]))
 print(C)

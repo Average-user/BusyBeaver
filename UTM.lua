@@ -27,7 +27,7 @@ end
 
 -- Runs a TM in the empty input checking various conditions as in the paper
 function runTM(M,n,m,bound)
-  local tape,ix,state,iterations,reason,nzeros,minix,maxix = {},0,"a",0,nil,0,0,0
+  local tape,ix,state,iterations,reason,nzeros = {},0,"a",0,nil,0
   local get = function(tape,i)
     local v = tape[i]
     if v == nil then
@@ -39,12 +39,10 @@ function runTM(M,n,m,bound)
     if iterations > 0 and nzeros == 0 then  -- blank-tape condition
       reason = "blank"
       break
-    end
-    if state == "z" then
+    elseif state == "z" then
       reason = "halted"
       break  
-    end
-    if iterations >= bound then
+    elseif iterations >= bound then
       reason = "bound"
       break
     end
@@ -69,8 +67,6 @@ function runTM(M,n,m,bound)
       ix = ix+1
     end
     iterations = iterations+1
-    minix = math.min(ix,minix)
-    maxix = math.max(ix,maxix)
   end
   return output,iterations,reason,undef,nzeros
 end
@@ -84,7 +80,7 @@ bb32 = readTM(3,2,bb32D)
 bb52 = readTM(5,2,bb52D)
 bb24 = readTM(2,4,bb24D)
 --[[
-output,iters,reason,undef,prod = runTM(bb52,5,2,100^10)
+output,iters,reason,undef,prod = runTM(bb52,5,2,10^8)
 print(iters)
 print(reason)
 print(prod)
