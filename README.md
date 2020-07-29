@@ -61,7 +61,7 @@ halting Turing Machine with higher productivity.
 
 ## Results
 The following results were all obtained with a `bound` of
-100 in a `i5-4300U CPU @ 1.90GHz` using [LuaJit](https://luajit.org/).
+100 in a `i5-4300U CPU @ 1.90GHz` using [LuaJIT](https://luajit.org/).
 By running the following command `time luajit main.lua n m 100`.
 
 
@@ -73,7 +73,4 @@ By running the following command `time luajit main.lua n m 100`.
 | 4x2          |            511,162 | 1,957             |
 | 2x4          |            342,516 | 1,347             |
 | 3x3          |         26,814,336 | 95,437            |
-
-Of this table, the only differences with the paper
-are that for `4x2` they get `511,145` and for `3x4` they get
-`26,813,197` (page 23).
+| 5x2          |        102,596,856 | 698.161           |
