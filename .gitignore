@@ -1,4 +1,5 @@
 *.txt
 bb.lua
+run.sh
 README.html
 !test-outputs/*.txt
